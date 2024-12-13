@@ -35,7 +35,7 @@ let clockInterval;
 function updateClock(timezoneOffset) {
   const utcNow = new Date();  // Aktuelle UTC-Zeit
   const localTime = new Date(utcNow.getTime() + timezoneOffset * 60 * 60 * 1000);  // Berechnung der lokalen Zeit
-  
+
   const hours = String(localTime.getHours()).padStart(2, "0");
   const minutes = String(localTime.getMinutes()).padStart(2, "0");
   const seconds = String(localTime.getSeconds()).padStart(2, "0");
@@ -44,29 +44,37 @@ function updateClock(timezoneOffset) {
 
 async function loadRandomCapital() {
   let foundCapital = false;
-  
+  let offsetAdjust = 0;
+
   while (!foundCapital) {
-    const randomCapital = capitals[Math.floor(Math.random() * capitals.length)];
-    const { name, country, lat, lon, code, timezoneOffset } = randomCapital;
+    for (const randomCapital of capitals) {
+      const { name, country, lat, lon, code, timezoneOffset } = randomCapital;
 
-    const utcNow = new Date();  // Aktuelle UTC-Zeit
-    const localTime = new Date(utcNow.getTime() + timezoneOffset * 60 * 60 * 1000);  // Berechnung der lokalen Zeit für die Hauptstadt
-    
-    const localHours = localTime.getHours();
-    
-    // Nur Städte zwischen 16:00 und 17:00 Uhr lokalzeit anzeigen
-    if (localHours >= 16 && localHours < 17) {
-      capitalNameElement.textContent = name;
-      countryNameElement.textContent = country;
-      mapImageElement.src = `https://static-maps.yandex.ru/1.x/?ll=${lon},${lat}&z=12&size=600,300&l=map`;
-      mapsLinkElement.href = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=12/${lat}/${lon}`;
-      mapsLinkElement.textContent = `Zur interaktiven Karte von ${name}`;
+      const utcNow = new Date();  // Aktuelle UTC-Zeit
+      const adjustedOffset = timezoneOffset + offsetAdjust;
+      const localTime = new Date(utcNow.getTime() + adjustedOffset * 60 * 60 * 1000);  // Berechnung der lokalen Zeit für die Hauptstadt
 
-      // Uhrzeit aktualisieren
-      if (clockInterval) clearInterval(clockInterval); // Vorheriges Intervall stoppen
-      clockInterval = setInterval(() => updateClock(timezoneOffset), 1000);
-      
-      foundCapital = true;  // Passende Stadt gefunden
+      const localHours = localTime.getHours();
+
+      // Suche nach der ersten Stadt, die in der gewünschten Zeitzone oder angepassten Zeitzone liegt
+      if (localHours >= 16 && localHours < 17) {
+        capitalNameElement.textContent = name;
+        countryNameElement.textContent = country;
+        mapImageElement.src = `https://static-maps.yandex.ru/1.x/?ll=${lon},${lat}&z=12&size=600,300&l=map`;
+        mapsLinkElement.href = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=12/${lat}/${lon}`;
+        mapsLinkElement.textContent = `Zur interaktiven Karte von ${name}`;
+
+        // Uhrzeit aktualisieren
+        if (clockInterval) clearInterval(clockInterval); // Vorheriges Intervall stoppen
+        clockInterval = setInterval(() => updateClock(timezoneOffset), 1000);
+
+        foundCapital = true;  // Passende Stadt gefunden
+        break;
+      }
+    }
+
+    if (!foundCapital) {
+      offsetAdjust += 1; // Eine Stunde weiter suchen
     }
   }
 }
