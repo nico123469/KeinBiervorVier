@@ -1,7 +1,5 @@
 # KeinBiervorVier
 
-  - Sommer/Winterzeit
-
-  - Mehr Länder
-
-  - Link für Bilder entfernen
+ - 216 Städte
+ - Sommer/Winter-Zeit berücksichtigt
+ - Cooles Logo
